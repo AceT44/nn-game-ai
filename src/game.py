@@ -12,10 +12,13 @@ class Game:
         ))
         pygame.display.set_caption('Game AI')
 
+        self.game_font = pygame.font.SysFont('Arial', 36)
+
         self.player = Player(self)
         self.obstacle = Obstacle(self)
 
         self.running = True
+        self.game_state = 'playing'  # change later to 'menu'
         self.score = 0
         self.clock = pygame.time.Clock()
 
@@ -26,16 +29,25 @@ class Game:
                     self.running = False
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key in (pygame.K_SPACE, pygame.K_UP) and self.player.jumping == False:
+                    if event.key in (pygame.K_SPACE, pygame.K_UP) and self.player.jumping == False and self.game_state == 'playing':
                         self.player.jump()
 
-            self.player.update()
-            self.obstacle.update()
-
-            self.check_collision()
-            self.get_score()
+                    if event.key == pygame.K_SPACE and self.game_state != 'playing':
+                        print('test')  # restart the game after losing
 
             self.screen.fill('white')
+
+            if self.game_state == 'playing':
+                self.player.update()
+                self.obstacle.update()
+
+                self.check_collision()
+
+                self.get_score()
+                self.draw_score()
+
+            if self.game_state == 'game over':
+                self.game_over()
 
             pygame.draw.rect(  # draw the player
                 self.screen,
@@ -59,12 +71,53 @@ class Game:
                 self.player.vel_y = 0
                 self.player.jumping = False
             else:
-                self.running = False
+                self.game_state = 'game over'
 
     def get_score(self):
         if self.obstacle.passed_obstacle == True:
             self.score += 1
-            print(self.score)
+
+    def draw_score(self):
+        score_text = self.game_font.render(str(self.score), False, 'black')
+
+        self.screen.blit(
+            score_text,
+            (self.GAME_WIDTH // 2, self.GAME_HEIGHT // 8)
+        )
+
+    def game_over(self):
+        game_over_text = self.game_font.render(
+            'GAME OVER!',
+            False,
+            'black'
+        )
+
+        final_score_text = self.game_font.render(
+            f'FINAL SCORE: {str(self.score)}',
+            False,
+            'black'
+        )
+
+        restart_text = self.game_font.render(
+            'PRESS SPACE TO PLAY AGAIN',
+            False,
+            'black'
+        )
+
+        self.screen.blit(
+            game_over_text,
+            (self.GAME_WIDTH // 3, self.GAME_HEIGHT // 10)
+        )
+
+        self.screen.blit(
+            final_score_text,
+            (self.GAME_WIDTH // 3, self.GAME_HEIGHT // 4)
+        )
+
+        self.screen.blit(
+            restart_text,
+            (self.GAME_WIDTH // 6, self.GAME_HEIGHT // 2)
+        )
 
 
 class Player:
