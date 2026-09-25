@@ -124,7 +124,11 @@ class Game:
         self.game_state = 'playing'
 
         self.obstacle.obstacle_rect.x = self.GAME_WIDTH
+        self.obstacle.vel_x = -3
+        self.obstacle.passed_obstacle = False
+
         self.player.vel_y = 0
+        self.player.player_rect.y = self.GAME_HEIGHT - self.player.PLAYER_HEIGHT
         self.player.jumping = False
 
 
@@ -175,3 +179,4 @@ class Obstacle:
         if self.obstacle_rect.right < 0:  # resetting obstacle after passing the screen
             self.passed_obstacle = True
             self.obstacle_rect.x = self.game.GAME_WIDTH
+            self.vel_x -= 0.2
