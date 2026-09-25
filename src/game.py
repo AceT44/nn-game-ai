@@ -30,10 +30,10 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_SPACE, pygame.K_UP) and self.player.jumping == False and self.game_state == 'playing':
-                        self.player.jump()
+                        self.player.jump()  # player jump while playing
 
                     if event.key == pygame.K_SPACE and self.game_state != 'playing':
-                        print('test')  # restart the game after losing
+                        self.play_again()  # restart the game after losing
 
             self.screen.fill('white')
 
@@ -46,19 +46,19 @@ class Game:
                 self.get_score()
                 self.draw_score()
 
+                pygame.draw.rect(  # draw the player
+                    self.screen,
+                    'black',
+                    self.player.player_rect
+                )
+                pygame.draw.rect(  # draw the obstacles
+                    self.screen,
+                    'black',
+                    self.obstacle.obstacle_rect
+                )
+
             if self.game_state == 'game over':
                 self.game_over()
-
-            pygame.draw.rect(  # draw the player
-                self.screen,
-                'black',
-                self.player.player_rect
-            )
-            pygame.draw.rect(  # draw the obstacles
-                self.screen,
-                'black',
-                self.obstacle.obstacle_rect
-            )
 
             pygame.display.update()
 
@@ -119,6 +119,14 @@ class Game:
             (self.GAME_WIDTH // 6, self.GAME_HEIGHT // 2)
         )
 
+    def play_again(self):
+        self.score = 0
+        self.game_state = 'playing'
+
+        self.obstacle.obstacle_rect.x = self.GAME_WIDTH
+        self.player.vel_y = 0
+        self.player.jumping = False
+
 
 class Player:
     JUMP_VEL = 17
@@ -157,13 +165,13 @@ class Obstacle:
         self.game = game
 
         self.vel_x = -3
-        self.obstacle_rect = pygame.Rect(800, 500, 50, 100)
+        self.obstacle_rect = pygame.Rect(self.game.GAME_WIDTH, 500, 50, 100)
         self.passed_obstacle = False
 
     def update(self):
         self.passed_obstacle = False
         self.obstacle_rect.x += self.vel_x
 
-        if self.obstacle_rect.right < 0:
+        if self.obstacle_rect.right < 0:  # resetting obstacle after passing the screen
             self.passed_obstacle = True
             self.obstacle_rect.x = self.game.GAME_WIDTH
