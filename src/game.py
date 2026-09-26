@@ -1,5 +1,7 @@
 import random
 import pygame
+import numpy as np
+from ai import NeuralNetwork
 
 
 class Game:
@@ -17,6 +19,7 @@ class Game:
 
         self.player = Player(self)
         self.obstacle = Obstacle(self)
+        self.neural_network = NeuralNetwork()
 
         self.running = True
         self.game_state = 'menu'
@@ -73,6 +76,20 @@ class Game:
                     'black',
                     self.obstacle.obstacle_rect
                 )
+
+                if self.game_mode == 'ai':  # defining the inputs for the AI
+                    distance = self.obstacle.obstacle_rect.left - self.player.player_rect.right
+                    obstacle_height = self.obstacle.choose_height
+                    player_velocity = self.player.vel_y
+
+                    inputs = np.array([
+                        distance,
+                        obstacle_height,
+                        player_velocity
+                    ])
+
+                    output = self.neural_network.predict(inputs)
+                    print(output[0])  # remove later
 
             if self.game_state == 'game over':
                 self.game_over()
@@ -235,16 +252,17 @@ class Obstacle:
 
     def generate_obstacle(self):
         obstacle_heights = (25, 75, 125)
-        choose_height = random.choices(
+
+        self.choose_height = random.choices(
             obstacle_heights,
             weights=[5, 3, 2]
         )[0]
 
         self.obstacle_rect = pygame.Rect(
             self.game.GAME_WIDTH,
-            self.game.GAME_HEIGHT - choose_height,
+            self.game.GAME_HEIGHT - self.choose_height,
             50,
-            choose_height
+            self.choose_height
         )
 
     def update(self):
