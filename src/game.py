@@ -1,3 +1,4 @@
+import random
 import pygame
 
 
@@ -51,6 +52,7 @@ class Game:
                     'black',
                     self.player.player_rect
                 )
+
                 pygame.draw.rect(  # draw the obstacles
                     self.screen,
                     'black',
@@ -169,8 +171,23 @@ class Obstacle:
         self.game = game
 
         self.vel_x = -3
-        self.obstacle_rect = pygame.Rect(self.game.GAME_WIDTH, 500, 50, 100)
         self.passed_obstacle = False
+
+        self.generate_obstacle()
+
+    def generate_obstacle(self):
+        obstacle_heights = (25, 75, 125)
+        choose_height = random.choices(
+            obstacle_heights,
+            weights=[5, 3, 2]
+        )[0]
+
+        self.obstacle_rect = pygame.Rect(
+            self.game.GAME_WIDTH,
+            self.game.GAME_HEIGHT - choose_height,
+            50,
+            choose_height
+        )
 
     def update(self):
         self.passed_obstacle = False
@@ -180,3 +197,4 @@ class Obstacle:
             self.passed_obstacle = True
             self.obstacle_rect.x = self.game.GAME_WIDTH
             self.vel_x -= 0.2
+            self.generate_obstacle()
