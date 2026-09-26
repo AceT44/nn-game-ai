@@ -19,8 +19,9 @@ class Game:
         self.obstacle = Obstacle(self)
 
         self.running = True
-        self.game_state = 'playing'  # change later to 'menu'
+        self.game_state = 'menu'
         self.score = 0
+        self.game_mode = None
         self.clock = pygame.time.Clock()
 
     def run(self):
@@ -30,13 +31,27 @@ class Game:
                     self.running = False
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_1 and self.game_state == 'menu':
+                        self.game_mode = 'normal'
+                        self.game_state = 'playing'
+
+                    if event.key == pygame.K_2 and self.game_state == 'menu':
+                        self.game_mode = 'ai'
+                        self.game_state = 'playing'
+
                     if event.key in (pygame.K_SPACE, pygame.K_UP) and self.player.jumping == False and self.game_state == 'playing':
                         self.player.jump()  # player jump while playing
 
-                    if event.key == pygame.K_SPACE and self.game_state != 'playing':
-                        self.play_again()  # restart the game after losing
+                    if event.key == pygame.K_SPACE and self.game_state == 'game over':
+                        self.reset_game()  # restart the game after losing
+
+                    if event.key == pygame.K_q and self.game_state == 'game over':
+                        self.menu()
 
             self.screen.fill('white')
+
+            if self.game_state == 'menu':
+                self.menu()
 
             if self.game_state == 'playing':
                 self.player.update()
@@ -66,6 +81,32 @@ class Game:
 
             self.clock.tick(60)
 
+    def menu(self):
+        self.reset_game()
+        self.game_state = 'menu'
+
+        normal_mode_text = self.game_font.render(
+            'PRESS 1 FOR NORMAL MODE',
+            False,
+            'black'
+        )
+
+        ai_mode_text = self.game_font.render(
+            'PRESS 2 FOR AI MODE',
+            False,
+            'black'
+        )
+
+        self.screen.blit(
+            normal_mode_text,
+            (self.GAME_WIDTH // 4, self.GAME_HEIGHT // 8)
+        )
+
+        self.screen.blit(
+            ai_mode_text,
+            (self.GAME_WIDTH // 4, self.GAME_HEIGHT // 4)
+        )
+
     def check_collision(self):  # could be improved with stricter collision detection
         if self.player.player_rect.colliderect(self.obstacle.obstacle_rect):
             if self.player.vel_y > 0 and self.player.player_rect.y < self.obstacle.obstacle_rect.y:
@@ -80,7 +121,11 @@ class Game:
             self.score += 1
 
     def draw_score(self):
-        score_text = self.game_font.render(str(self.score), False, 'black')
+        score_text = self.game_font.render(
+            str(self.score),
+            False,
+            'black'
+        )
 
         self.screen.blit(
             score_text,
@@ -106,6 +151,12 @@ class Game:
             'black'
         )
 
+        return_menu_text = self.game_font.render(
+            'PRESS Q TO RETURN TO THE MENU',
+            False,
+            'black'
+        )
+
         self.screen.blit(
             game_over_text,
             (self.GAME_WIDTH // 3, self.GAME_HEIGHT // 10)
@@ -121,9 +172,16 @@ class Game:
             (self.GAME_WIDTH // 6, self.GAME_HEIGHT // 2)
         )
 
-    def play_again(self):
+        self.screen.blit(
+            return_menu_text,
+            (self.GAME_WIDTH // 7, self.GAME_HEIGHT // 1.5)
+        )
+
+    def reset_game(self):
         self.score = 0
-        self.game_state = 'playing'
+
+        if self.game_state == 'game over':
+            self.game_state = 'playing'
 
         self.obstacle.obstacle_rect.x = self.GAME_WIDTH
         self.obstacle.vel_x = -3
